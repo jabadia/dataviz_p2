@@ -91,7 +91,7 @@ function createChart(graph)
         .data(graph.nodes)
     .enter().append("circle")
         .attr("class", "node")
-        .attr("r", function(d) { return Math.max(4, d.degree * 3); })
+        .attr("r", function(d) { return Math.max(6, d.degree * 4); })
         .style("fill", function(d) { return color(d.group); })
         .call(force.drag);
 
