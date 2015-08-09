@@ -2,29 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Programming Assignment 2 - Activewear Products Available Online</title>
+    <title>Programming Assignment 2 - Activewear Brands sold in same Online Retailer</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h1>Programming Assignment 2</h1>
-    <h2>Activewear Products Available Online</h2>
-
-    <div class="legend">
-        <span class="swatch" style="background-color: #3182bd"></span> Unisex
-        <span class="swatch" style="background-color: #fdae6b"></span> Men
-        <span class="swatch" style="background-color: #a1d99b"></span> Women
-    </div>
+    <h2>Activewear Brands sold in same online retailer</h2>
 
     <div id="chart"></div>
 
     <div class="legend">
-        <span id="gender-label">-</span> | 
-        <span id="kind-label">-</span> | 
-        <span id="name-label">-</span>
+        <span id="retailers-label">[move mouse over graph]</span>
     </div>
     
     <h4>Explanation</h4>
-    <p>This chart shows the number of Activewear products available in an online e-commerce site. Products are organized by gender</p>
+    <p>This dataset shows the relationship between activewear brands and online retailers.</p>
+    <ul>
+        <li>Each node represents one brand</li>
+        <li>Brands are linked together if they are sold in the same retailer.</li>
+        <li>Node size represents the number of retailers that sell that particular brand</li>
+        <li>Brands with the same color are sold by the same retailer(s)</li>
+    </ul>
+    <p>Interesting observations</p>
+    <ul>
+        <li>There are a couple of clusters of brands that are sold by only one retailer (Sears and JCPenny)</li>
+        <li>A few brands are sold by many retailers (Nike, Under Armour, Adidas)</li>
+        <li>Many brands are sold only by one retailer, normally the owner of the brand</li>
+    </ul>
     <p>Javier Abadía, July 2015</p>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.min.js"></script>

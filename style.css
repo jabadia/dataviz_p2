@@ -21,28 +21,23 @@ body {
 }
 
 .node {
-  font-family: 'Roboto Condensed', sans-serif;
-  border: solid 1px white;
-  font: 10px sans-serif;
-  line-height: 12px;
-  overflow: hidden;
-  position: absolute;
-  cursor: default;
+  stroke: #fff;
+  stroke-width: 1.5px;
 }
 
-.node:hover {
-  border-width: 2px;
-  z-index: 1;
-  margin: -1px;
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
 }
 
-.legend {
-  font-size: 12px;
+.legend
+{
+  font-family: 'Roboto Condensed';
+  font-weight: 300;
 }
 
-.swatch {
-    display: inline-block;
-    width:  15px;
-    height: 15px;
-    vertical-align: middle;
+.legend b
+{
+  font-weight: 400;
+  background-color: yellow;
 }

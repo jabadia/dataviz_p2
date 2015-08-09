@@ -2,118 +2,122 @@
 
 function prepareData(url,cb)
 {
-    d3.json(url, function(error,data)
+    var psv = d3.dsv("|", "text/plain");
+
+    psv(url, function(error,data)
     {
         if (error) throw error;
 
-        var root = {
-            name: 'categories',
-            children: [],
-        };
-
-        var genders = _.unique( _.pluck( data, 'gender_name' ));
-        var kinds   = _.unique( _.pluck( data, 'kind' ));
-
-        root.children = _.map(genders, function(g)
+        // console.log(data);
+        data = _.filter(data, function(item) { return item.pc > 500; });
+        _.each(data, function(item)
         {
-            return {
-                name: g,
-                children: _.map(kinds, function(k)
-                {
-                    return {
-                        name: k,
-                        gender: g,
-                        children: []
-                    };
-                })
+            item.webshop_name = item.webshop_name.split('_')[0];
+        });
+
+        var brands = _.unique( _.pluck(data, 'brand') );
+
+        var nodes = _.map(brands, function(b)
+        {
+            var retailers = _.unique(_.pluck( _.filter(data, { brand: b}), 'webshop_name')).sort();
+            return { 
+                name: b,
+                label: "<b>" + b + "</b> sold by " + retailers.join(', '), 
+                group: retailers.join('|'), 
+                degree: retailers.length
             };
         });
 
-        console.log(root);
-
-        _.each(data, function(category)
+        brands = {};
+        _.each(nodes, function(n, i)
         {
-            if( category.category_name == 'Activewear')
-                return; //category.category_name = 'Other';
-
-            category.category_name = category.category_name.replace("Activewear ", "");
-
-            var gender_branch = _.find(root.children, { name: category.gender_name });
-            var kind_branch = _.find(gender_branch.children, { name: category.kind });
-
-            category.name = category.category_name;
-            category.size = category.sum_product_count;
-
-            kind_branch.children.push( category );
+            brands[n.name] = i;
         });
 
-        console.log(root);
-        cb(root);
-
-    });
-}
-
-function createChart(root)
-{
-    var margin = {top: 10, right: 10, bottom: 10, left: 10},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
-
-    var genders = _.unique( _.pluck( root.children, 'name' ));
-    var color_ranges = _.map(genders, function(g,i)
-    {
-        switch(i)
+        var links = [];
+        _.each(data, function(item)
         {
-            case 0: return d3.scale.ordinal().range(colorbrewer.Blues[3]);
-            case 1: return d3.scale.ordinal().range(colorbrewer.Greens[3]);
-            case 2: return d3.scale.ordinal().range(colorbrewer.Oranges[3]);
-        }        
-    });
-    var colors = d3.scale.ordinal().range(color_ranges);
+            var related = _.filter(data, { webshop_name: item.webshop_name});
+            var node0 = brands[ item.brand ];
 
-    var treemap = d3.layout.treemap()
-        .size([width, height])
-        .sticky(true)
-        .value(function(d) { return d.size; });
+            _.each(related, function(other)
+            {
+                var node1 = brands[ other.brand ];
+                links.push({ source: node0, target: node1, value: 1 });
+            });
 
-    var div = d3.select("#chart")
-        .style("position", "relative")
-        .style("width", (width + margin.left + margin.right) + "px")
-        .style("height", (height + margin.top + margin.bottom) + "px")
-        .style("left", "0px")
-        .style("top", margin.top + "px");
-
-    var node = div.datum(root).selectAll(".node")
-        .data(treemap.nodes)
-    .enter().append("div")
-        .attr("class", "node")
-        .call(position)
-        .style("background", function(d,i) { return d.children ? colors(d.gender)(d.name) : null; })
-        .text(function(d) { return d.children ? null : d.name; })
-        .on('mouseover', function(d)
-        {
-            document.getElementById('gender-label').innerHTML = d.gender_name;
-            document.getElementById('kind-label').innerHTML = d.kind + " body";
-            document.getElementById('name-label').innerHTML = d.name;            
         })
-        .on('mouseout', function(d)
-        {
-            document.getElementById('gender-label').innerHTML = "-";
-            document.getElementById('kind-label').innerHTML = "-";
-            document.getElementById('name-label').innerHTML = "-";            
-        });
+
+        var graph = {
+            nodes: nodes,
+            links: links,
+        };
+
+        console.log(graph);
+
+        cb(graph);
+    });
 }
 
-function position() {
-    this.style("left", function(d) { return d.x + "px"; })
-    .style("top", function(d) { return d.y + "px"; })
-    .style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
-    .style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });
+function createChart(graph)
+{
+    var width  = 960,
+        height = 500;
+
+    var color = d3.scale.category20();
+
+    var force = d3.layout.force()
+        .charge(-110)
+        .linkDistance(75)
+        .linkStrength(0.2)
+        .size([width, height]);
+
+    var svg = d3.select("#chart").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    force
+      .nodes(graph.nodes)
+      .links(graph.links)
+      .start();
+
+    var link = svg.selectAll(".link")
+        .data(graph.links)
+    .enter().append("line")
+        .attr("class", "link")
+        .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+    var node = svg.selectAll(".node")
+        .data(graph.nodes)
+    .enter().append("circle")
+        .attr("class", "node")
+        .attr("r", function(d) { return Math.max(8, d.degree * 3); })
+        .style("fill", function(d) { return color(d.group); })
+        .call(force.drag);
+
+    node.append("title")
+        .text(function(d) { return d.name; });
+
+    node.on('mouseover', function(d)
+    {
+        document.getElementById('retailers-label').innerHTML = d.label;
+    })
+
+    force.on("tick", function() 
+    {
+        link.attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
+
+        node.attr("cx", function(d) { return d.x; })
+            .attr("cy", function(d) { return d.y; });
+    });
 }
 
 function main()
 {
-    prepareData('data.json', createChart);
+    prepareData('brands.psv', createChart);
 }
 
 main();
