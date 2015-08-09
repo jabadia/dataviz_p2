@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Programming Assignment 2 - Activewear Products Available Online</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Programming Assignment 2</h1>
+    <h2>Activewear Products Available Online</h2>
+
+    <div class="legend">
+        <span class="swatch" style="background-color: #3182bd"></span> Unisex
+        <span class="swatch" style="background-color: #fdae6b"></span> Men
+        <span class="swatch" style="background-color: #a1d99b"></span> Women
+    </div>
+
+    <div id="chart"></div>
+
+    <div class="legend">
+        <span id="gender-label">-</span> | 
+        <span id="kind-label">-</span> | 
+        <span id="name-label">-</span>
+    </div>
+    
+    <h4>Explanation</h4>
+    <p>This chart shows the number of Activewear products available in an online e-commerce site. Products are organized by gender</p>
+    <p>Javier Abadía, July 2015</p>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+    <script src="colorbrewer.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
